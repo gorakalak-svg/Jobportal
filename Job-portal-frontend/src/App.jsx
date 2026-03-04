@@ -31,8 +31,16 @@ import { TechnologyBlog } from './Components-LandingPage/TechnologyBlog'
 import { ContactUs } from './Components-LandingPage/Contactus'
 import { FAQ } from './Components-LandingPage/FAQ'
 import { EmployerDashboard } from './Components-Employer/EmployerDashboard'
+import { CompanyVerify } from './Components-Employer/CompanyVerify'
 import { EMessenger } from './Components-Employer/EMessenger'
 import { JMessenger } from './Components-Jobseeker/JMessenger'
+import { FindTalent } from './Components-Employer/FindTalent'
+import { EditJob } from './Components-Employer/EditJob'
+import { PostJobForm } from './Components-Employer/PostJobForm'
+import { PostJobPreview } from './Components-Employer/PostJobPreview'
+import { JsProfileOverview } from './Components-Employer/JsProfileOverview'
+import { AboutYourCompany } from './Components-Employer/AboutYourCompany'
+import { PostedJobs } from './Components-Employer/PostedJobs'
 
 const router = createBrowserRouter([{
   path: '/Job-portal',
@@ -151,6 +159,30 @@ const router = createBrowserRouter([{
   element: <EmployerDashboard />
 },
 {
+  path: '/Job-portal/Employer/about-your-company',
+  element: <AboutYourCompany />
+},
+{
+  path: '/Job-portal/Employer/about-your-company/company-verification',
+  element: <CompanyVerify />,
+},
+{
+  path: '/Job-portal/Employer/EditJob',
+  element: <EditJob />
+},
+{
+  path: '/Job-portal/Employer/PostJob',
+  element: <PostJobForm />
+},
+{
+  path: '/Job-portal/Employer/PostJobpreview',
+  element: <PostJobPreview />
+},
+{
+  path: '/Job-portal/Employer/Postedjobs',
+  element: <PostedJobs />
+},
+{
   path: '/Job-portal/Employer/chat',
   element: <EMessenger />
 },
@@ -158,6 +190,18 @@ const router = createBrowserRouter([{
   path: '/Job-portal/jobseeker/chat',
   element: <JMessenger />
 },
+{
+  path: '/Job-portal/employer-chat/:id',
+  element: <EMessenger/>
+},
+{
+  path: '/Job-portal/Employer/FindTalent',
+  element: <FindTalent/>
+},
+{
+  path: '/Job-portal/Employer/FindTalent/ProfileOverview/:id',
+  element: <JsProfileOverview/>
+}
 ])
 
 function App() {

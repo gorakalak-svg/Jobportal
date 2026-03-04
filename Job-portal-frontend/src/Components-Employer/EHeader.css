@@ -25,6 +25,8 @@
     border-color:gray;
     border-style: solid;
     width: 40%;
+
+
 }
 
 .E-searchicon{
@@ -44,6 +46,8 @@
     display: flex;
     align-items: center;
     gap: 30px;
+    
+   
 }
 .Msg,.notification{
     width: 22px;

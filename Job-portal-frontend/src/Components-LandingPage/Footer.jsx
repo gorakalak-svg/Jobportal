@@ -43,7 +43,7 @@ export const Footer = () => {
           <h3>Employers</h3>
           <ul>
             <li>Post a Job</li>
-            <li>Find Talent</li>
+            <li onClick={()=>{navigate('/Job-portal/Employer/FindTalent')}}>Find Talent</li>
             <li>Employer Dashboard</li>
           </ul>
         </div>

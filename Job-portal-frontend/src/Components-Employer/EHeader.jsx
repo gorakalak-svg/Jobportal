@@ -9,8 +9,9 @@ import { Link, NavLink } from 'react-router-dom'
 export const EHeader = () => {
     const NavIcons = [
 
-        { image: chat, path: "/Job-portal/Employer/chat" },
+        { image: chat, path: "/Job-portal/Employer/Chat" },
         { image: bell, path: "" },
+
 
     ]
     return (

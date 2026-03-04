@@ -7,8 +7,6 @@ import reviewIcon from "../assets/icon_reviews.png";
 import settingsIcon from "../assets/icon_settings.png";
 import helpIcon from "../assets/icon_help.png";
 import "./AvatarMenu.css";
-import api from "../api/axios";
-
 
 
 export const AvatarMenu = () => {
@@ -16,24 +14,6 @@ export const AvatarMenu = () => {
 
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
-  const handleLogout = async () => {
-    try {
-      const refresh = localStorage.getItem("refresh");
-      if (refresh) {
-        await api.post("/logout/", { refresh });
-      }
-
-    } catch (err) {
-      console.error("Logout failed:", err);
-    } finally {
-      // Clear tokens no matter what
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      setOpen(false);
-      navigate("/Job-portal");
-    }
-  };
-
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -57,45 +37,29 @@ export const AvatarMenu = () => {
 
       {open && (
         <div className="avatar-menu">
-          <Link to="/Job-portal/jobseeker/myprofile" className="menu-item">
+          <Link to="/Job-portal/jobseeker/myprofile" className="menu-items">
             <img src={profileIcon} className="menu-icon" alt="profile" />
             Profile
           </Link>
 
-          <Link
-            to="/Job-portal/jobseeker/myreviews"
-            className="menu-item"
-            onClick={() => setOpen(false)}
-          >
+          <Link to="" className="menu-items">
             <img src={reviewIcon} className="menu-icon" alt="reviews" />
             My reviews
           </Link>
 
-
-          <Link
-            to="/Job-portal/jobseeker/settings"
-            className="menu-item"
-            onClick={() => setOpen(false)}
-          >
+          <Link to="/Job-portal/jobseeker/Settings" className="menu-items">
             <img src={settingsIcon} className="menu-icon" alt="settings" />
             Settings
           </Link>
 
-          <Link
-            to="/Job-portal/jobseeker/help"
-            className="menu-item"
-            onClick={() => setOpen(false)}
-          >
+          <Link to="/Job-portal/jobseeker/help-center" className="menu-items">
             <img src={helpIcon} className="menu-icon" alt="help" />
             Help Centre
           </Link>
 
-
           <div className="menu-divider"></div>
 
-          <button onClick={handleLogout} className="menu-item avatar-logout-btn">
-            Logout
-          </button>
+          <button onClick={() => navigate('/Job-portal')} className=" avatar-logout-btn">Logout</button>
         </div>
       )}
     </div>

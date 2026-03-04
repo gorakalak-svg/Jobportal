@@ -1,137 +1,180 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './JMessenger.css';
+import '../Components-Employer/Chatbox.css'
 import { useJobs } from '../JobContext';
+import axios from "axios"; // 🔥 ADDED ONLY
 
-/* ✅ ADDED */
-import axios from "axios";
-const API = "/api/jobseeker/chat"; // change if needed
-/* ---------- */
-
+//**JMessenger***//
 export const JMessenger = () => {
-    const { chats, setChats, isChatEnded} = useJobs();
+    
+    const CurrentUser = 1; 
+    
+    const { chats, setChats, isChatEnded, setNotificationsData } = useJobs();
+
     const [input, setInput] = useState("");
+
     const scrollRef = useRef(null);
+    
+    const myChatData = chats.find(c => c.id === CurrentUser);
 
-    /* ✅ ADDED */
-    const token = localStorage.getItem("access");
-    const headers = { Authorization: `Bearer ${token}` };
-    /* ---------- */
+    const employerProfile = chats.find(c => c.role === "employer");
 
-    const employerChat = chats.find(c => c.role === "employer");
+    const hasMessages = myChatData?.messages && myChatData.messages.length > 0;
 
-    /* ✅ ADDED → load messages from backend */
+    // 🔥 NEW: Fetch Messages From Backend (NO CHANGE TO YOUR UI)
     useEffect(() => {
-        const loadMessages = async () => {
+        const fetchMessages = async () => {
             try {
-                if (!employerChat?.conversation_id) return;
+                const token = localStorage.getItem("access");
 
                 const res = await axios.get(
-                    `${API}/chat/conversations/${employerChat.conversation_id}/messages/`,
-                    { headers }
+                    `http://127.0.0.1:8000/api/chat/conversations/${CurrentUser}/messages/`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
                 );
 
+                // 🔥 Sync Backend Messages Into Your Existing Context
                 setChats(prev =>
                     prev.map(chat =>
-                        chat.id === employerChat.id
+                        chat.id === CurrentUser
                             ? { ...chat, messages: res.data }
                             : chat
                     )
                 );
 
             } catch (err) {
-                console.error("Load messages error:", err);
+                console.error("Error fetching backend messages", err);
             }
         };
 
-        loadMessages();
+        fetchMessages();
     }, []);
-    /* ---------- */
 
     useEffect(() => {
-        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }, [employerChat.messages]);
+        if (myChatData?.messages.length > 0) {
+            setNotificationsData(prev => 
+                prev.map(notif => 
+                    notif.targetId === CurrentUser ? { ...notif, isRead: true } : notif
+                )
+            );
+        }
+    }, [myChatData?.messages.length]);
+
+    useEffect(() => {
+        if (scrollRef.current) 
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }, [myChatData?.messages]);
 
     const handleSend = async (e) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (!input.trim() || isChatEnded) return;
 
+        const token = localStorage.getItem("access");
+
+        try {
+            // 🔥 SEND MESSAGE TO DJANGO
+            await axios.post(
+                "http://127.0.0.1:8000/api/chat/messages/send/",
+                {
+                    conversation: CurrentUser,
+                    content: input
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+        } catch (err) {
+            console.error("Error sending message", err);
+        }
+
+        // 🔵 YOUR ORIGINAL LOGIC (UNCHANGED)
         const newMsg = {
             id: Date.now(),
             text: input,
-            sender: "me",
+            sender: "jobseeker", 
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
-        /* ✅ ADDED → send to backend */
-        try {
-            await axios.post(
-                `${API}/chat/messages/send/`,
-                {
-                    conversation: employerChat.conversation_id,
-                    content: input
-                },
-                { headers }
-            );
-        } catch (err) {
-            console.error("Send failed:", err.response?.data || err);
-        }
-        /* ---------- */
-
-        setChats(prev => prev.map(chat =>
-            chat.id === employerChat.id ? { ...chat, messages: [...chat.messages, newMsg] } : chat
+        setChats(prev => prev.map(chat => 
+            chat.id === CurrentUser ? { ...chat, messages: [...chat.messages, newMsg] } : chat
         ));
+
         setInput("");
     };
 
     return (
-        <div className="web-messenger-container">
+        <div className="messages-container">
             <div className="E-chat-name">
                 <div style={{ height: "100vh" }} className="web-sidebar">
-                    <div className="sidebar-header"><h2>Messages</h2></div>
-                    <div className="sidebar-item active">
-                        <strong>{employerChat.name}</strong>
+                    <div className="sidebar-header">
+                        <h2 style={{color:"#007bff",textAlign:"center"}}>Messages</h2>
                     </div>
+                    {hasMessages && (
+                        <div className="sidebar-item active">
+                            <strong>{employerProfile?.name}</strong>
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="web-main-chat">
-                <header className="web-chat-header">
-                    <strong>{employerChat.name}</strong>
-                </header>
-
-                <div className="web-chat-window" ref={scrollRef}>
-                    {employerChat.messages.length === 0 ? <p>You will not able to sent messages</p> : employerChat.messages.map((m) => (
-                        <div key={m.id} className="web-msg-row">
-                            <div className={`web-bubble web-${m.sender || "them"}`}>
-                                {m.text || m.content}
-                            </div>
+                {hasMessages ? (
+                    <>
+                        <header className="web-chat-header">
+                            <strong>{employerProfile?.name}</strong>
+                        </header>
+                        
+                        <div className="web-chat-window" ref={scrollRef}>
+                            {myChatData?.messages.map((m) => (
+                                <div key={m.id} className="web-msg-row">
+                                    <div className={`web-bubble ${m.sender === 'jobseeker' ? 'web-me' : 'web-friend'}`}>
+                                        {/* 🔥 Supports Both Backend & Frontend */}
+                                        {m.text || m.content}
+                                    </div>
+                                </div>
+                            ))}
+                            {isChatEnded && 
+                                <div className="chat-end-label">
+                                    --- Conversation Ended ---
+                                </div>
+                            }
                         </div>
-                    ))}
 
-                    {isChatEnded && (
-                        <div style={{ textAlign: "center", padding: "10px", color: "gray", fontSize: "12px" }}>
-                            --- Conversation Ended ---
-                        </div>
-                    )}
-                </div>
-
-                <form className="web-input-bar" onSubmit={handleSend}>
-                    <input
-                        className="web-text-input"
-                        value={input}
-                        disabled={employerChat.messages.length === 0 || isChatEnded}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder={employerChat.messages.length === 0 ? '' : "Say Hi"}
-                    />
-
-                    <button
-                        type="submit"
-                        disabled={employerChat.messages.length === 0 || isChatEnded}
-                        className={employerChat.messages.length === 0 || isChatEnded ? "web-disable-button" : "web-send-button"}
+                        <form className="web-input-bar" onSubmit={handleSend}>
+                            <input 
+                                className="web-text-input" 
+                                value={input} 
+                                disabled={isChatEnded}  
+                                onChange={(e) => setInput(e.target.value)} 
+                                placeholder="Reply to employer..." 
+                            />
+                            <button 
+                                type="submit" 
+                                disabled={isChatEnded} 
+                                className="web-send-button"
+                            >
+                                SEND
+                            </button>
+                        </form>
+                    </>
+                ) : (
+                    <div 
+                        style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}} 
+                        className="no-messages-view"
                     >
-                        SEND
-                    </button>
-                </form>
+                        <div 
+                            style={{display:"flex", flexDirection:"column",justifyContent:"center",alignItems:"center"}} 
+                            className="no-msg-content"
+                        >
+                            <h3>No Messages</h3>
+                            <p>Waiting for the employer to start the conversation.</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
